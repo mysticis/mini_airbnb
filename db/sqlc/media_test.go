@@ -11,7 +11,7 @@ import (
 func createRandomImage(t *testing.T) RoomMedium {
 
 	arg := CreateMediaParams{
-		RoomID:     3,
+		RoomID:     4,
 		RoomImages: "Test Image",
 	}
 	roomMedia, err := testQueries.CreateMedia(context.Background(), arg)

@@ -10,7 +10,7 @@ import (
 
 func createRandomReservation(t *testing.T) {
 	arg := CreateReservationParams{
-		TenantID:  2,
+		TenantID:  5,
 		RoomID:    3,
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
@@ -35,7 +35,7 @@ func TestCreateReservation(t *testing.T) {
 
 func createARandomReservation(t *testing.T) Reservation {
 	arg := CreateReservationParams{
-		TenantID:  3,
+		TenantID:  6,
 		RoomID:    2,
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Day())),
@@ -75,7 +75,7 @@ func TestGetReservation(t *testing.T) {
 
 func createBRandomReservation(t *testing.T) Reservation {
 	arg := CreateReservationParams{
-		TenantID:  5,
+		TenantID:  7,
 		RoomID:    3,
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
