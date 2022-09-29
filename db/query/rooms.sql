@@ -23,13 +23,14 @@ INSERT INTO rooms (
 RETURNING *;
 
 
--- name: GetRoom :one
+-- name: GetRoomByOwner :one
 SELECT * FROM rooms
-WHERE id = $1 LIMIT 1;
+WHERE owner_id = $1 LIMIT 1;
 
 -- name: ListRoomsByOwner :many
 SELECT * FROM rooms
-ORDER BY owner_id
+WHERE owner_id = $2
+ORDER BY id
 LIMIT $1
 OFFSET $2;
 
@@ -57,9 +58,9 @@ set home_type = $2,
   price = $15,
   longitude = $16,
   latitude = $17
-WHERE owner_id = $1
+WHERE owner_id = $2 AND id = $1
 RETURNING *;
 
 -- name: DeleteRoom :exec
 DELETE FROM rooms
-WHERE id = $1;
+WHERE owner_id = $2 AND id = $1;

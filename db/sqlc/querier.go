@@ -18,15 +18,16 @@ type Querier interface {
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	DeleteReservation(ctx context.Context, arg DeleteReservationParams) error
 	DeleteReview(ctx context.Context, arg DeleteReviewParams) error
-	DeleteRoom(ctx context.Context, id int32) error
+	DeleteRoom(ctx context.Context, arg DeleteRoomParams) error
 	DeleteRoomMedia(ctx context.Context, arg DeleteRoomMediaParams) error
 	DeleteTenant(ctx context.Context, id int32) error
 	GetReservation(ctx context.Context, tenantID int32) (Reservation, error)
-	GetRoom(ctx context.Context, id int32) (Room, error)
+	GetRoomByOwner(ctx context.Context, ownerID int32) (Room, error)
 	GetRoomMedia(ctx context.Context, roomID int32) (RoomMedium, error)
 	GetRoomReview(ctx context.Context, arg GetRoomReviewParams) (Review, error)
 	GetTenant(ctx context.Context, id int32) (Tenant, error)
 	ListAllRooms(ctx context.Context, arg ListAllRoomsParams) ([]Room, error)
+	ListLandlords(ctx context.Context) ([]Landlord, error)
 	ListReservations(ctx context.Context) ([]Reservation, error)
 	ListRoomReviews(ctx context.Context, roomID int32) ([]Review, error)
 	ListRoomsByOwner(ctx context.Context, arg ListRoomsByOwnerParams) ([]Room, error)

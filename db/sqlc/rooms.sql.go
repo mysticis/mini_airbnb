@@ -105,21 +105,26 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 
 const deleteRoom = `-- name: DeleteRoom :exec
 DELETE FROM rooms
-WHERE id = $1
+WHERE owner_id = $2 AND id = $1
 `
 
-func (q *Queries) DeleteRoom(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteRoom, id)
+type DeleteRoomParams struct {
+	ID      int32 `json:"id"`
+	OwnerID int32 `json:"owner_id"`
+}
+
+func (q *Queries) DeleteRoom(ctx context.Context, arg DeleteRoomParams) error {
+	_, err := q.db.ExecContext(ctx, deleteRoom, arg.ID, arg.OwnerID)
 	return err
 }
 
-const getRoom = `-- name: GetRoom :one
+const getRoomByOwner = `-- name: GetRoomByOwner :one
 SELECT id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
-WHERE id = $1 LIMIT 1
+WHERE owner_id = $1 LIMIT 1
 `
 
-func (q *Queries) GetRoom(ctx context.Context, id int32) (Room, error) {
-	row := q.db.QueryRowContext(ctx, getRoom, id)
+func (q *Queries) GetRoomByOwner(ctx context.Context, ownerID int32) (Room, error) {
+	row := q.db.QueryRowContext(ctx, getRoomByOwner, ownerID)
 	var i Room
 	err := row.Scan(
 		&i.ID,
@@ -206,7 +211,8 @@ func (q *Queries) ListAllRooms(ctx context.Context, arg ListAllRoomsParams) ([]R
 
 const listRoomsByOwner = `-- name: ListRoomsByOwner :many
 SELECT id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
-ORDER BY owner_id
+WHERE owner_id = $2
+ORDER BY id
 LIMIT $1
 OFFSET $2
 `
@@ -279,12 +285,12 @@ set home_type = $2,
   price = $15,
   longitude = $16,
   latitude = $17
-WHERE owner_id = $1
+WHERE owner_id = $2 AND id = $1
 RETURNING id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude
 `
 
 type UpdateRoomParams struct {
-	OwnerID              int32    `json:"owner_id"`
+	ID                   int32    `json:"id"`
 	HomeType             []string `json:"home_type"`
 	HomeSize             HomeSize `json:"home_size"`
 	Furnished            bool     `json:"furnished"`
@@ -305,7 +311,7 @@ type UpdateRoomParams struct {
 
 func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error) {
 	row := q.db.QueryRowContext(ctx, updateRoom,
-		arg.OwnerID,
+		arg.ID,
 		pq.Array(arg.HomeType),
 		arg.HomeSize,
 		arg.Furnished,

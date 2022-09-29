@@ -97,7 +97,7 @@ func createRandomRoom(t *testing.T) Room {
 func TestGetRoom(t *testing.T) {
 
 	room1 := createRandomRoom(t)
-	room2, err := testQueries.GetRoom(context.Background(), room1.ID)
+	room2, err := testQueries.GetRoomByOwner(context.Background(), room1.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, room2)
 
@@ -230,7 +230,6 @@ func TestUpdateRoom(t *testing.T) {
 	room := createRandomRoomB(t)
 
 	arg := UpdateRoomParams{
-		OwnerID:              room.OwnerID,
 		HomeType:             []string{"Private Room"},
 		HomeSize:             "30m_squared_or_more",
 		Furnished:            false,
@@ -317,10 +316,13 @@ func createRandomRoomC(t *testing.T) Room {
 func TestDeleteRoom(t *testing.T) {
 
 	roomToDel := createRandomRoomC(t)
-
-	err := testQueries.DeleteRoom(context.Background(), roomToDel.ID)
+	arg := DeleteRoomParams{
+		ID:      roomToDel.ID,
+		OwnerID: roomToDel.OwnerID,
+	}
+	err := testQueries.DeleteRoom(context.Background(), arg)
 	require.NoError(t, err)
-	room, err := testQueries.GetRoom(context.Background(), roomToDel.ID)
+	room, err := testQueries.GetRoomByOwner(context.Background(), roomToDel.ID)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, room)

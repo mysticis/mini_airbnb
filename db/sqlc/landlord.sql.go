@@ -45,3 +45,38 @@ func (q *Queries) CreateLandlord(ctx context.Context, arg CreateLandlordParams) 
 	)
 	return i, err
 }
+
+const listLandlords = `-- name: ListLandlords :many
+SELECT id, first_name, last_name, phone, email, password FROM landlord
+ORDER BY first_name
+`
+
+func (q *Queries) ListLandlords(ctx context.Context) ([]Landlord, error) {
+	rows, err := q.db.QueryContext(ctx, listLandlords)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Landlord{}
+	for rows.Next() {
+		var i Landlord
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Phone,
+			&i.Email,
+			&i.Password,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

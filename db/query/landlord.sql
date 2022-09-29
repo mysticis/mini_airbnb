@@ -5,3 +5,7 @@ INSERT INTO landlord (
   $1, $2, $3, $4, $5
 )
 RETURNING *;
+
+-- name: ListLandlords :many
+SELECT * FROM landlord
+ORDER BY first_name;
