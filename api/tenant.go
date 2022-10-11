@@ -41,3 +41,16 @@ func (server *Server) createTenant(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, tenant)
 }
+
+// list tenants
+func (server *Server) listTenants(ctx *gin.Context) {
+
+	tenants, err := server.store.ListTenants(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tenants)
+}

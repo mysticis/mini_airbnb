@@ -67,31 +67,47 @@ func (q *Queries) DeleteReservation(ctx context.Context, arg DeleteReservationPa
 	return err
 }
 
-const getReservation = `-- name: GetReservation :one
+const getReservations = `-- name: GetReservations :many
 SELECT id, tenant_id, room_id, start_date, end_date, price, total, created_at, updated_at FROM reservations
-WHERE tenant_id = $1 LIMIT 1
+WHERE tenant_id = $1
 `
 
-func (q *Queries) GetReservation(ctx context.Context, tenantID int32) (Reservation, error) {
-	row := q.db.QueryRowContext(ctx, getReservation, tenantID)
-	var i Reservation
-	err := row.Scan(
-		&i.ID,
-		&i.TenantID,
-		&i.RoomID,
-		&i.StartDate,
-		&i.EndDate,
-		&i.Price,
-		&i.Total,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetReservations(ctx context.Context, tenantID int32) ([]Reservation, error) {
+	rows, err := q.db.QueryContext(ctx, getReservations, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Reservation{}
+	for rows.Next() {
+		var i Reservation
+		if err := rows.Scan(
+			&i.ID,
+			&i.TenantID,
+			&i.RoomID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Price,
+			&i.Total,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listReservations = `-- name: ListReservations :many
 SELECT id, tenant_id, room_id, start_date, end_date, price, total, created_at, updated_at FROM reservations
-ORDER BY tenant_id
+ORDER BY id
 `
 
 func (q *Queries) ListReservations(ctx context.Context) ([]Reservation, error) {

@@ -6,13 +6,13 @@ INSERT INTO reservations (
 )
 RETURNING *;
 
--- name: GetReservation :one
+-- name: GetReservations :many
 SELECT * FROM reservations
-WHERE tenant_id = $1 LIMIT 1;
+WHERE tenant_id = $1;
 
 -- name: ListReservations :many
 SELECT * FROM reservations
-ORDER BY tenant_id;
+ORDER BY id;
 
 -- name: DeleteReservation :exec
 DELETE FROM reservations

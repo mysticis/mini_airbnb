@@ -5,13 +5,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomReservation(t *testing.T) {
 	arg := CreateReservationParams{
-		TenantID:  5,
-		RoomID:    3,
+		TenantID:  int32(gofakeit.IntRange(1, 10)),
+		RoomID:    int32(gofakeit.IntRange(28, 35)),
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
 		Price:     200.00,
@@ -35,12 +36,12 @@ func TestCreateReservation(t *testing.T) {
 
 func createARandomReservation(t *testing.T) Reservation {
 	arg := CreateReservationParams{
-		TenantID:  6,
-		RoomID:    2,
+		TenantID:  int32(gofakeit.IntRange(1, 10)),
+		RoomID:    int32(gofakeit.IntRange(28, 35)),
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Day())),
-		Price:     200.00,
-		Total:     320.00,
+		Price:     gofakeit.Float64Range(250, 500),
+		Total:     gofakeit.Float64Range(500, 600),
 	}
 
 	reservation, err := testQueries.CreateReservation(context.Background(), arg)
@@ -54,20 +55,18 @@ func createARandomReservation(t *testing.T) Reservation {
 	require.WithinDuration(t, arg.EndDate, reservation.EndDate, 10*time.Second)
 	return reservation
 }
-func TestGetReservation(t *testing.T) {
+func TestGetReservations(t *testing.T) {
 
 	reservation1 := createARandomReservation(t)
 
-	reservation2, err := testQueries.GetReservation(context.Background(), reservation1.TenantID)
+	reservations, err := testQueries.GetReservations(context.Background(), reservation1.TenantID)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, reservation2)
 
-	require.Equal(t, reservation1.TenantID, reservation2.TenantID)
-	require.Equal(t, reservation1.Price, reservation2.Price)
-	require.Equal(t, reservation1.Total, reservation2.Total)
-	require.WithinDuration(t, reservation1.StartDate, reservation2.StartDate, 25*time.Hour)
-	require.WithinDuration(t, reservation1.EndDate, reservation2.EndDate, 30*time.Hour)
+	require.Len(t, reservations, len(reservations))
+	for _, returnedRes := range reservations {
+		require.NotEmpty(t, returnedRes)
+	}
 
 }
 
@@ -75,8 +74,8 @@ func TestGetReservation(t *testing.T) {
 
 func createBRandomReservation(t *testing.T) Reservation {
 	arg := CreateReservationParams{
-		TenantID:  7,
-		RoomID:    3,
+		TenantID:  int32(gofakeit.IntRange(1, 10)),
+		RoomID:    int32(gofakeit.IntRange(28, 35)),
 		StartDate: time.Now(),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
 		Price:     250.00,
@@ -102,7 +101,7 @@ func TestUpdateReservation(t *testing.T) {
 	arg := UpdateReservationParams{
 		ID:        res1.ID,
 		TenantID:  res1.TenantID,
-		RoomID:    1,
+		RoomID:    int32(gofakeit.IntRange(28, 35)),
 		StartDate: time.Now().Add(time.Duration(time.Now().Day())),
 		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
 		Price:     600.00,

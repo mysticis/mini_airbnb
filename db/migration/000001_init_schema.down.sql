@@ -1,7 +1,6 @@
 
 DROP TABLE admin;
 DROP TABLE reviews;
-DROP TABLE room_media;
 DROP TABLE reservations;
 DROP TABLE rooms;
 DROP TABLE landlord;

@@ -41,6 +41,7 @@ func (server *Server) createLandlord(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, landlord)
 }
 
+// list landlords
 func (server *Server) listLandlords(ctx *gin.Context) {
 
 	landlords, err := server.store.ListLandlords(ctx)

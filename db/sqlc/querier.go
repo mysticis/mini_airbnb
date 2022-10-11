@@ -11,7 +11,6 @@ import (
 type Querier interface {
 	CreateAdmin(ctx context.Context, arg CreateAdminParams) (Admin, error)
 	CreateLandlord(ctx context.Context, arg CreateLandlordParams) (Landlord, error)
-	CreateMedia(ctx context.Context, arg CreateMediaParams) (RoomMedium, error)
 	CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error)
 	CreateReview(ctx context.Context, arg CreateReviewParams) (Review, error)
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
@@ -19,24 +18,20 @@ type Querier interface {
 	DeleteReservation(ctx context.Context, arg DeleteReservationParams) error
 	DeleteReview(ctx context.Context, arg DeleteReviewParams) error
 	DeleteRoom(ctx context.Context, arg DeleteRoomParams) error
-	DeleteRoomMedia(ctx context.Context, arg DeleteRoomMediaParams) error
 	DeleteTenant(ctx context.Context, id int32) error
-	GetReservation(ctx context.Context, tenantID int32) (Reservation, error)
-	GetRoomByOwner(ctx context.Context, ownerID int32) (Room, error)
-	GetRoomMedia(ctx context.Context, roomID int32) (RoomMedium, error)
+	GetReservations(ctx context.Context, tenantID int32) ([]Reservation, error)
+	GetRoomByOwner(ctx context.Context, arg GetRoomByOwnerParams) (Room, error)
 	GetRoomReview(ctx context.Context, arg GetRoomReviewParams) (Review, error)
 	GetTenant(ctx context.Context, id int32) (Tenant, error)
 	ListAllRooms(ctx context.Context, arg ListAllRoomsParams) ([]Room, error)
 	ListLandlords(ctx context.Context) ([]Landlord, error)
 	ListReservations(ctx context.Context) ([]Reservation, error)
 	ListRoomReviews(ctx context.Context, roomID int32) ([]Review, error)
-	ListRoomsByOwner(ctx context.Context, arg ListRoomsByOwnerParams) ([]Room, error)
-	ListRoomsMedia(ctx context.Context, roomID int32) ([]RoomMedium, error)
+	ListRoomsByOwner(ctx context.Context, ownerID int32) ([]Room, error)
 	ListTenants(ctx context.Context) ([]Tenant, error)
 	UpdateReservation(ctx context.Context, arg UpdateReservationParams) (Reservation, error)
 	UpdateReview(ctx context.Context, arg UpdateReviewParams) (Review, error)
 	UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error)
-	UpdateRoomMedia(ctx context.Context, arg UpdateRoomMediaParams) (RoomMedium, error)
 }
 
 var _ Querier = (*Queries)(nil)

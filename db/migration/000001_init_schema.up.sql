@@ -26,7 +26,7 @@ CREATE TABLE "landlord" (
 CREATE TABLE "rooms" (
   "id" SERIAL PRIMARY KEY,
   "owner_id" int NOT NULL,
-  "home_type" text[] NOT NULL,
+  "home_type" varchar[] NOT NULL,
   "home_size" home_size NOT NULL,
   "furnished" boolean NOT NULL,
   "private_bathroom" boolean NOT NULL,
@@ -59,11 +59,6 @@ CREATE TABLE "reservations" (
   "updated_at" timestamptz NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE "room_media" (
-   "id" SERIAL PRIMARY KEY,
-  "room_id" int NOT NULL,
-  "room_images" varchar NOT NULL
-);
 
 CREATE TABLE "reviews" (
   "id" SERIAL PRIMARY KEY,
@@ -85,8 +80,6 @@ ALTER TABLE "rooms" ADD FOREIGN KEY ("owner_id") REFERENCES "landlord" ("id") ON
 ALTER TABLE "reservations" ADD FOREIGN KEY ("tenant_id") REFERENCES "tenant" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "reservations" ADD FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "room_media" ADD FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "reviews" ADD FOREIGN KEY ("user_id") REFERENCES "tenant" ("id") ON DELETE CASCADE;
 

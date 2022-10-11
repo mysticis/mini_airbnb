@@ -12,8 +12,8 @@ import (
 func TestCreateReview(t *testing.T) {
 
 	arg := CreateReviewParams{
-		UserID:  5,
-		RoomID:  6,
+		UserID:  int32(gofakeit.IntRange(1, 10)),
+		RoomID:  int32(gofakeit.IntRange(28, 35)),
 		Comment: gofakeit.Sentence(7),
 		Rating:  int32(gofakeit.IntRange(1, 7)),
 	}
@@ -29,8 +29,8 @@ func TestCreateReview(t *testing.T) {
 
 func createRandomReview(t *testing.T) Review {
 	arg := CreateReviewParams{
-		UserID:  6,
-		RoomID:  7,
+		UserID:  int32(gofakeit.IntRange(1, 10)),
+		RoomID:  int32(gofakeit.IntRange(28, 35)),
 		Comment: gofakeit.Sentence(7),
 		Rating:  int32(gofakeit.IntRange(1, 5)),
 	}

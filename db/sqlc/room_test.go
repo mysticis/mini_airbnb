@@ -5,13 +5,14 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateRoom(t *testing.T) {
 
 	arg := CreateRoomParams{
-		OwnerID:              1,
+		OwnerID:              int32(gofakeit.IntRange(1, 15)),
 		HomeType:             []string{"Shared Room", "Apartment"},
 		HomeSize:             "30m_squared_or_more",
 		Furnished:            true,
@@ -54,7 +55,7 @@ func TestCreateRoom(t *testing.T) {
 
 func createRandomRoom(t *testing.T) Room {
 	arg := CreateRoomParams{
-		OwnerID:              2,
+		OwnerID:              int32(gofakeit.IntRange(1, 15)),
 		HomeType:             []string{"Private Room", "Shared room"},
 		HomeSize:             "60m_squared_or_more",
 		Furnished:            true,
@@ -97,7 +98,11 @@ func createRandomRoom(t *testing.T) Room {
 func TestGetRoom(t *testing.T) {
 
 	room1 := createRandomRoom(t)
-	room2, err := testQueries.GetRoomByOwner(context.Background(), room1.ID)
+	args := GetRoomByOwnerParams{
+		ID:      room1.ID,
+		OwnerID: room1.OwnerID,
+	}
+	room2, err := testQueries.GetRoomByOwner(context.Background(), args)
 	require.NoError(t, err)
 	require.NotEmpty(t, room2)
 
@@ -122,7 +127,7 @@ func TestGetRoom(t *testing.T) {
 
 func createARandomRoom(t *testing.T) Room {
 	arg := CreateRoomParams{
-		OwnerID:              3,
+		OwnerID:              int32(gofakeit.IntRange(1, 15)),
 		HomeType:             []string{"Private Room", "Shared room"},
 		HomeSize:             "90m_squared_or_more",
 		Furnished:            true,
@@ -168,14 +173,9 @@ func TestListRoomsByOwner(t *testing.T) {
 		createARandomRoom(t)
 	}
 
-	arg := ListRoomsByOwnerParams{
-		Limit:  3,
-		Offset: 3,
-	}
-
-	rooms, err := testQueries.ListRoomsByOwner(context.Background(), arg)
+	rooms, err := testQueries.ListRoomsByOwner(context.Background(), int32(gofakeit.IntRange(1, 14)))
 	require.NoError(t, err)
-	require.Len(t, rooms, 3)
+	require.Len(t, rooms, len(rooms))
 	for _, returnedRooms := range rooms {
 		require.NotEmpty(t, returnedRooms)
 	}
@@ -184,7 +184,7 @@ func TestListRoomsByOwner(t *testing.T) {
 
 func createRandomRoomB(t *testing.T) Room {
 	arg := CreateRoomParams{
-		OwnerID:              4,
+		OwnerID:              int32(gofakeit.IntRange(1, 15)),
 		HomeType:             []string{"Private Room", "Shared room"},
 		HomeSize:             "60m_squared_or_more",
 		Furnished:            true,
@@ -230,6 +230,8 @@ func TestUpdateRoom(t *testing.T) {
 	room := createRandomRoomB(t)
 
 	arg := UpdateRoomParams{
+		ID:                   room.ID,
+		OwnerID:              room.OwnerID,
 		HomeType:             []string{"Private Room"},
 		HomeSize:             "30m_squared_or_more",
 		Furnished:            false,
@@ -272,7 +274,7 @@ func TestUpdateRoom(t *testing.T) {
 
 func createRandomRoomC(t *testing.T) Room {
 	arg := CreateRoomParams{
-		OwnerID:              4,
+		OwnerID:              int32(gofakeit.IntRange(1, 15)),
 		HomeType:             []string{"Private Room", "Shared room"},
 		HomeSize:             "60m_squared_or_more",
 		Furnished:            true,
@@ -320,9 +322,13 @@ func TestDeleteRoom(t *testing.T) {
 		ID:      roomToDel.ID,
 		OwnerID: roomToDel.OwnerID,
 	}
+	args := GetRoomByOwnerParams{
+		ID:      roomToDel.ID,
+		OwnerID: roomToDel.OwnerID,
+	}
 	err := testQueries.DeleteRoom(context.Background(), arg)
 	require.NoError(t, err)
-	room, err := testQueries.GetRoomByOwner(context.Background(), roomToDel.ID)
+	room, err := testQueries.GetRoomByOwner(context.Background(), args)
 	require.Error(t, err)
 	require.EqualError(t, err, sql.ErrNoRows.Error())
 	require.Empty(t, room)

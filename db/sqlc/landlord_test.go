@@ -36,4 +36,9 @@ func TestCreateLandord(t *testing.T) {
 	createRandomLandord(t)
 	createRandomLandord(t)
 	createRandomLandord(t)
+	createRandomLandord(t)
+	createRandomLandord(t)
+	createRandomLandord(t)
+	createRandomLandord(t)
+	createRandomLandord(t)
 }

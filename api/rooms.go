@@ -10,26 +10,26 @@ import (
 )
 
 type createRoomRequest struct {
-	OwnerID              int32     `json:"owner_id" binding:"required"`
-	HomeType             []string  `json:"home_type" binding:"required"`
-	HomeSize             string    `json:"home_size" binding:"required oneof=15m_squared_or_more 30m_squared_or_more 60m_squared_or_more 90m_squared_or_more"`
-	Furnished            bool      `json:"furnished" binding:"required"`
-	PrivateBathroom      bool      `json:"private_bathroom" binding:"required"`
-	Balcony              bool      `json:"balcony" binding:"required"`
-	Garden               bool      `json:"garden" binding:"required"`
-	Kitchen              bool      `json:"kitchen" binding:"required"`
-	PetsAllowed          bool      `json:"pets_allowed" binding:"required"`
-	Parking              bool      `json:"parking" binding:"required"`
-	WheelchairAccessible bool      `json:"wheelchair_accessible" binding:"required"`
-	Basement             bool      `json:"basement" binding:"required"`
-	Amenities            []string  `json:"amenities" binding:"required"`
-	SuitableFor          []string  `json:"suitable_for" binding:"required"`
-	PublishedAt          time.Time `json:"published_at" binding:"required"`
-	Price                float64   `json:"price" binding:"required"`
-	CreatedAt            time.Time `json:"created_at" binding:"required"`
-	UpdatedAt            time.Time `json:"updated_at" binding:"required"`
-	Longitude            float64   `json:"longitude" binding:"required"`
-	Latitude             float64   `json:"latitude" binding:"required"`
+	OwnerID              int32     `uri:"owner_id"`
+	HomeType             []string  `json:"home_type"`
+	HomeSize             string    `json:"home_size"`
+	Furnished            bool      `json:"furnished"`
+	PrivateBathroom      bool      `json:"private_bathroom"`
+	Balcony              bool      `json:"balcony"`
+	Garden               bool      `json:"garden"`
+	Kitchen              bool      `json:"kitchen"`
+	PetsAllowed          bool      `json:"pets_allowed"`
+	Parking              bool      `json:"parking"`
+	WheelchairAccessible bool      `json:"wheelchair_accessible"`
+	Basement             bool      `json:"basement"`
+	Amenities            []string  `json:"amenities"`
+	SuitableFor          []string  `json:"suitable_for"`
+	PublishedAt          time.Time `json:"published_at"`
+	Price                float64   `json:"price"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+	Longitude            float64   `json:"longitude"`
+	Latitude             float64   `json:"latitude"`
 }
 
 func (server *Server) createRoom(ctx *gin.Context) {
@@ -79,18 +79,22 @@ func (server *Server) createRoom(ctx *gin.Context) {
 //Get a room request
 
 type getRoomByOwnerRequest struct {
-	OwnerID int `json:"owner_id,omitempty"`
+	ID      int32 `form:"id"`
+	OwnerID int32 `form:"owner_id"`
 }
 
 func (server *Server) getRoomByOwner(ctx *gin.Context) {
 	var req getRoomByOwnerRequest
 
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	room, err := server.store.GetRoomByOwner(ctx, int32(req.OwnerID))
+	arg := db.GetRoomByOwnerParams{
+		ID:      req.ID,
+		OwnerID: req.OwnerID,
+	}
+	room, err := server.store.GetRoomByOwner(ctx, arg)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -107,9 +111,10 @@ func (server *Server) getRoomByOwner(ctx *gin.Context) {
 //Update Room
 
 type updateRoomRequest struct {
-	OwnerID              int32    `json:"owner_id"`
+	ID                   int32    `form:"id" binding:"required,min=1"`
+	OwnerID              int32    `form:"owner_id" binding:"required,min=1"`
 	HomeType             []string `json:"home_type"`
-	HomeSize             string   `json:"home_size" binding:"required oneof=15m_squared_or_more 30m_squared_or_more 60m_squared_or_more 90m_squared_or_more"`
+	HomeSize             string   `json:"home_size"`
 	Furnished            bool     `json:"furnished"`
 	PrivateBathroom      bool     `json:"private_bathroom"`
 	Balcony              bool     `json:"balcony"`
@@ -130,7 +135,7 @@ func (server *Server) updateRoomDetails(ctx *gin.Context) {
 
 	var req updateRoomRequest
 
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -141,6 +146,8 @@ func (server *Server) updateRoomDetails(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateRoomParams{
+		ID:                   req.ID,
+		OwnerID:              req.OwnerID,
 		HomeType:             req.HomeType,
 		HomeSize:             db.HomeSize(req.HomeSize),
 		Furnished:            req.Furnished,
@@ -198,4 +205,30 @@ func (server *Server) listRooms(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, rooms)
+}
+
+//List rooms by owner
+
+type listRoomsByOwnerRequest struct {
+	OwnerID int32 `form:"owner_id"`
+}
+
+func (server *Server) listRoomsByOwner(ctx *gin.Context) {
+
+	var req listRoomsByOwnerRequest
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	listRooms, err := server.store.ListRoomsByOwner(ctx, req.OwnerID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, listRooms)
+
 }

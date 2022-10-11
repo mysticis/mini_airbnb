@@ -25,14 +25,12 @@ RETURNING *;
 
 -- name: GetRoomByOwner :one
 SELECT * FROM rooms
-WHERE owner_id = $1 LIMIT 1;
+WHERE owner_id = $2 AND id = $1 LIMIT 1;
 
 -- name: ListRoomsByOwner :many
 SELECT * FROM rooms
-WHERE owner_id = $2
-ORDER BY id
-LIMIT $1
-OFFSET $2;
+WHERE owner_id = $1
+ORDER BY id;
 
 -- name: ListAllRooms :many
 SELECT * FROM rooms
@@ -42,22 +40,22 @@ OFFSET $2;
 
 -- name: UpdateRoom :one
 UPDATE rooms
-set home_type = $2,
- home_size = $3, 
-  furnished = $4, 
-  private_bathroom = $5,
-  balcony = $6,
-  garden = $7,
-  kitchen = $8,
-  pets_allowed = $9,
-  parking = $10,
-  wheelchair_accessible = $11,
-  basement = $12,
-  amenities = $13,
-  suitable_for = $14,
-  price = $15,
-  longitude = $16,
-  latitude = $17
+set home_type = $3,
+ home_size = $4, 
+  furnished = $5, 
+  private_bathroom = $6,
+  balcony = $7,
+  garden = $8,
+  kitchen = $9,
+  pets_allowed = $10,
+  parking = $11,
+  wheelchair_accessible = $12,
+  basement = $13,
+  amenities = $14,
+  suitable_for = $15,
+  price = $16,
+  longitude = $17,
+  latitude = $18
 WHERE owner_id = $2 AND id = $1
 RETURNING *;
 
