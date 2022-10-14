@@ -61,12 +61,12 @@ type Admin struct {
 }
 
 type Landlord struct {
-	ID        int32  `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	ID             int32  `json:"id"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Phone          string `json:"phone"`
+	Email          string `json:"email"`
+	HashedPassword string `json:"hashed_password"`
 }
 
 type Reservation struct {
@@ -121,10 +121,10 @@ type RoomMedium struct {
 }
 
 type Tenant struct {
-	ID        int32  `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	Password  string `json:"password"`
+	ID             int32  `json:"id"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Email          string `json:"email"`
+	Phone          string `json:"phone"`
+	HashedPassword string `json:"hashed_password"`
 }

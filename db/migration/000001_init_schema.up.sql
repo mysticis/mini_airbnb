@@ -11,7 +11,7 @@ CREATE TABLE "tenant" (
   "last_name" varchar NOT NULL,
   "email" varchar UNIQUE NOT NULL,
   "phone" varchar NOT NULL,
-  "password" varchar NOT NULL
+  "hashed_password" varchar NOT NULL
 );
 
 CREATE TABLE "landlord" (
@@ -20,7 +20,7 @@ CREATE TABLE "landlord" (
   "last_name" varchar NOT NULL,
   "phone" varchar NOT NULL,
   "email" varchar UNIQUE NOT NULL,
-  "password" varchar NOT NULL
+  "hashed_password" varchar NOT NULL
 );
 
 CREATE TABLE "rooms" (

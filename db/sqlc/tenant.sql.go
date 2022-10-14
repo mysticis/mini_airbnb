@@ -11,19 +11,19 @@ import (
 
 const createTenant = `-- name: CreateTenant :one
 INSERT INTO tenant (
-  first_name, last_name, email, phone, password
+  first_name, last_name, email, phone, hashed_password
 ) VALUES (
   $1, $2, $3, $4, $5
 )
-RETURNING id, first_name, last_name, email, phone, password
+RETURNING id, first_name, last_name, email, phone, hashed_password
 `
 
 type CreateTenantParams struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	Password  string `json:"password"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Email          string `json:"email"`
+	Phone          string `json:"phone"`
+	HashedPassword string `json:"hashed_password"`
 }
 
 func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error) {
@@ -32,7 +32,7 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 		arg.LastName,
 		arg.Email,
 		arg.Phone,
-		arg.Password,
+		arg.HashedPassword,
 	)
 	var i Tenant
 	err := row.Scan(
@@ -41,7 +41,7 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 		&i.LastName,
 		&i.Email,
 		&i.Phone,
-		&i.Password,
+		&i.HashedPassword,
 	)
 	return i, err
 }
@@ -57,12 +57,12 @@ func (q *Queries) DeleteTenant(ctx context.Context, id int32) error {
 }
 
 const getTenant = `-- name: GetTenant :one
-SELECT id, first_name, last_name, email, phone, password FROM tenant
-WHERE id = $1 LIMIT 1
+SELECT id, first_name, last_name, email, phone, hashed_password FROM tenant
+WHERE email = $1 LIMIT 1
 `
 
-func (q *Queries) GetTenant(ctx context.Context, id int32) (Tenant, error) {
-	row := q.db.QueryRowContext(ctx, getTenant, id)
+func (q *Queries) GetTenant(ctx context.Context, email string) (Tenant, error) {
+	row := q.db.QueryRowContext(ctx, getTenant, email)
 	var i Tenant
 	err := row.Scan(
 		&i.ID,
@@ -70,13 +70,13 @@ func (q *Queries) GetTenant(ctx context.Context, id int32) (Tenant, error) {
 		&i.LastName,
 		&i.Email,
 		&i.Phone,
-		&i.Password,
+		&i.HashedPassword,
 	)
 	return i, err
 }
 
 const listTenants = `-- name: ListTenants :many
-SELECT id, first_name, last_name, email, phone, password FROM tenant
+SELECT id, first_name, last_name, email, phone, hashed_password FROM tenant
 ORDER BY first_name
 `
 
@@ -95,7 +95,7 @@ func (q *Queries) ListTenants(ctx context.Context) ([]Tenant, error) {
 			&i.LastName,
 			&i.Email,
 			&i.Phone,
-			&i.Password,
+			&i.HashedPassword,
 		); err != nil {
 			return nil, err
 		}

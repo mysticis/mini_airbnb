@@ -11,19 +11,19 @@ import (
 
 const createLandlord = `-- name: CreateLandlord :one
 INSERT INTO landlord (
-  first_name, last_name, email, phone, password
+  first_name, last_name, email, phone, hashed_password
 ) VALUES (
   $1, $2, $3, $4, $5
 )
-RETURNING id, first_name, last_name, phone, email, password
+RETURNING id, first_name, last_name, phone, email, hashed_password
 `
 
 type CreateLandlordParams struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	Password  string `json:"password"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Email          string `json:"email"`
+	Phone          string `json:"phone"`
+	HashedPassword string `json:"hashed_password"`
 }
 
 func (q *Queries) CreateLandlord(ctx context.Context, arg CreateLandlordParams) (Landlord, error) {
@@ -32,7 +32,7 @@ func (q *Queries) CreateLandlord(ctx context.Context, arg CreateLandlordParams) 
 		arg.LastName,
 		arg.Email,
 		arg.Phone,
-		arg.Password,
+		arg.HashedPassword,
 	)
 	var i Landlord
 	err := row.Scan(
@@ -41,13 +41,32 @@ func (q *Queries) CreateLandlord(ctx context.Context, arg CreateLandlordParams) 
 		&i.LastName,
 		&i.Phone,
 		&i.Email,
-		&i.Password,
+		&i.HashedPassword,
+	)
+	return i, err
+}
+
+const getLandlord = `-- name: GetLandlord :one
+SELECT id, first_name, last_name, phone, email, hashed_password FROM landlord
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetLandlord(ctx context.Context, email string) (Landlord, error) {
+	row := q.db.QueryRowContext(ctx, getLandlord, email)
+	var i Landlord
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Phone,
+		&i.Email,
+		&i.HashedPassword,
 	)
 	return i, err
 }
 
 const listLandlords = `-- name: ListLandlords :many
-SELECT id, first_name, last_name, phone, email, password FROM landlord
+SELECT id, first_name, last_name, phone, email, hashed_password FROM landlord
 ORDER BY first_name
 `
 
@@ -66,7 +85,7 @@ func (q *Queries) ListLandlords(ctx context.Context) ([]Landlord, error) {
 			&i.LastName,
 			&i.Phone,
 			&i.Email,
-			&i.Password,
+			&i.HashedPassword,
 		); err != nil {
 			return nil, err
 		}
