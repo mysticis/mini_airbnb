@@ -38,14 +38,14 @@ func (server *Server) createLandlord(ctx *gin.Context) {
 
 	var req createLandlordRequest
 
-	hashedPassword, err := utils.HashPassword(req.Password)
-	if err != nil {
-		log.Fatal("cannot hashpassword: ", err)
-	}
-
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+
+	hashedPassword, err := utils.HashPassword(req.Password)
+	if err != nil {
+		log.Fatal("cannot hashpassword: ", err)
 	}
 
 	arg := db.CreateLandlordParams{

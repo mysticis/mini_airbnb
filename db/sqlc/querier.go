@@ -19,6 +19,7 @@ type Querier interface {
 	DeleteReview(ctx context.Context, arg DeleteReviewParams) error
 	DeleteRoom(ctx context.Context, arg DeleteRoomParams) error
 	DeleteTenant(ctx context.Context, id int32) error
+	GetAdmin(ctx context.Context, name string) (Admin, error)
 	GetLandlord(ctx context.Context, email string) (Landlord, error)
 	GetReservations(ctx context.Context, tenantID int32) ([]Reservation, error)
 	GetRoomByOwner(ctx context.Context, arg GetRoomByOwnerParams) (Room, error)

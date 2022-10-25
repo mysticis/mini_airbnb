@@ -14,6 +14,7 @@ import (
 const createRoom = `-- name: CreateRoom :one
 INSERT INTO rooms (
   owner_id, 
+  email_id,
   home_type, 
   home_size, 
   furnished, 
@@ -31,13 +32,15 @@ INSERT INTO rooms (
   longitude,
   latitude 
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+ $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
 )
-RETURNING id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude
+
+RETURNING id, email_id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude
 `
 
 type CreateRoomParams struct {
 	OwnerID              int32    `json:"owner_id"`
+	EmailID              string   `json:"email_id"`
 	HomeType             []string `json:"home_type"`
 	HomeSize             HomeSize `json:"home_size"`
 	Furnished            bool     `json:"furnished"`
@@ -59,6 +62,7 @@ type CreateRoomParams struct {
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
 	row := q.db.QueryRowContext(ctx, createRoom,
 		arg.OwnerID,
+		arg.EmailID,
 		pq.Array(arg.HomeType),
 		arg.HomeSize,
 		arg.Furnished,
@@ -79,6 +83,7 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 	var i Room
 	err := row.Scan(
 		&i.ID,
+		&i.EmailID,
 		&i.OwnerID,
 		pq.Array(&i.HomeType),
 		&i.HomeSize,
@@ -119,7 +124,7 @@ func (q *Queries) DeleteRoom(ctx context.Context, arg DeleteRoomParams) error {
 }
 
 const getRoomByOwner = `-- name: GetRoomByOwner :one
-SELECT id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
+SELECT id, email_id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
 WHERE owner_id = $2 AND id = $1 LIMIT 1
 `
 
@@ -133,6 +138,7 @@ func (q *Queries) GetRoomByOwner(ctx context.Context, arg GetRoomByOwnerParams) 
 	var i Room
 	err := row.Scan(
 		&i.ID,
+		&i.EmailID,
 		&i.OwnerID,
 		pq.Array(&i.HomeType),
 		&i.HomeSize,
@@ -158,7 +164,7 @@ func (q *Queries) GetRoomByOwner(ctx context.Context, arg GetRoomByOwnerParams) 
 }
 
 const listAllRooms = `-- name: ListAllRooms :many
-SELECT id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
+SELECT id, email_id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -180,6 +186,7 @@ func (q *Queries) ListAllRooms(ctx context.Context, arg ListAllRoomsParams) ([]R
 		var i Room
 		if err := rows.Scan(
 			&i.ID,
+			&i.EmailID,
 			&i.OwnerID,
 			pq.Array(&i.HomeType),
 			&i.HomeSize,
@@ -215,7 +222,7 @@ func (q *Queries) ListAllRooms(ctx context.Context, arg ListAllRoomsParams) ([]R
 }
 
 const listRoomsByOwner = `-- name: ListRoomsByOwner :many
-SELECT id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
+SELECT id, email_id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude FROM rooms
 WHERE owner_id = $1
 ORDER BY id
 `
@@ -231,6 +238,7 @@ func (q *Queries) ListRoomsByOwner(ctx context.Context, ownerID int32) ([]Room, 
 		var i Room
 		if err := rows.Scan(
 			&i.ID,
+			&i.EmailID,
 			&i.OwnerID,
 			pq.Array(&i.HomeType),
 			&i.HomeSize,
@@ -284,7 +292,7 @@ set home_type = $3,
   longitude = $17,
   latitude = $18
 WHERE owner_id = $2 AND id = $1
-RETURNING id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude
+RETURNING id, email_id, owner_id, home_type, home_size, furnished, private_bathroom, balcony, garden, kitchen, pets_allowed, parking, wheelchair_accessible, basement, amenities, suitable_for, published_at, price, created_at, updated_at, longitude, latitude
 `
 
 type UpdateRoomParams struct {
@@ -332,6 +340,7 @@ func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, e
 	var i Room
 	err := row.Scan(
 		&i.ID,
+		&i.EmailID,
 		&i.OwnerID,
 		pq.Array(&i.HomeType),
 		&i.HomeSize,

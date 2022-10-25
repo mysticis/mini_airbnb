@@ -14,6 +14,7 @@ type Server struct {
 	store      db.Store
 	router     *gin.Engine
 	tokenMaker token.Maker
+	adminToken token.AdminMaker
 }
 
 func NewServer(config utils.Config, store db.Store) (*Server, error) {
@@ -22,10 +23,16 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	if err != nil {
 		log.Fatal("cannot create token maker:", err)
 	}
+
+	adminTokenMaker, err := token.NewPasetoAdminMaker(config.TokenSymmetricKeyAdmin)
+	if err != nil {
+		log.Fatal("cannot create token maker for admin:", err)
+	}
 	server := &Server{
 		store:      store,
 		tokenMaker: tokenMaker,
 		config:     config,
+		adminToken: adminTokenMaker,
 	}
 	server.setupRouter()
 	return server, nil
@@ -44,34 +51,46 @@ func (server *Server) setupRouter() {
 
 	router := gin.Default()
 	//API routes
-	//Landlord
+	//Create and Login Routes for Landlords and Tenants
+	//Admin Login
+	router.POST("/admin/create", server.createAdmin)
+	router.POST("/admin/login", server.adminLogin)
+
+	//Landlord APIs
 	router.POST("/landlord/create", server.createLandlord)
-	router.GET("/landlords", server.listLandlords)
-	router.POST("landlord/login", server.loginLandlord)
-	//Tenant
 	router.POST("/tenant/create", server.createTenant)
-	router.GET("/tenants", server.listTenants)
+	//Tenant APIs
 	router.POST("/tenant/login", server.loginTenant)
+	router.POST("/landlord/login", server.loginLandlord)
+
+	//for admin use
+	adminAuthRoutes := router.Group("/").Use(adminAuthMiddleware(server.adminToken))
+	//For Landlords and tenants
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	adminAuthRoutes.GET("/tenants", server.listTenants)
+
+	adminAuthRoutes.GET("/landlords", server.listLandlords) //list landlords
+
 	//Rooms
-	router.POST("/room/create/:owner_id", server.createRoom) //create a room with an owner identified
-	router.GET("/room", server.getRoomByOwner)               //Get a single room with identified owner
-	router.PUT("/room/update", server.updateRoomDetails)     //Update a particular room with identified owner
-	router.GET("/rooms", server.listRooms)                   //get all available rooms
-	router.GET("/roomsbyowner", server.listRoomsByOwner)     //get rooms by owner
+	authRoutes.POST("/room/create/:owner_id", server.createRoom) //create a room with an owner identified
+	authRoutes.GET("/room", server.getRoomByOwner)               //Get a single room with identified owner
+	authRoutes.PUT("/room/update", server.updateRoomDetails)     //Update a particular room with identified owner
+	adminAuthRoutes.GET("/rooms", server.listRooms)              //get all available rooms
+	authRoutes.GET("/roomsbyowner", server.listRoomsByOwner)     //get rooms by owner
 
 	//Reservations
-	router.POST("/reservation/create", server.createReservation)
-	router.GET("/reservations", server.getReservationsByTenant)
-	router.GET("/allreservations", server.listReservations)
-	router.DELETE("/reservation", server.deleteReservation)
-	router.PUT("/update/reservation", server.updateReservation)
+	authRoutes.POST("/reservation/create", server.createReservation) //create a reservation
+	authRoutes.GET("/reservations", server.getReservationsByTenant)  //get reservations for a tenant
+	adminAuthRoutes.GET("/allreservations", server.listReservations) //list all reservations
+	authRoutes.DELETE("/reservation", server.deleteReservation)      //delete a reservation
+	authRoutes.PUT("/update/reservation", server.updateReservation)  //update a reservation
 
 	//Reviews
-	router.POST("/reviews/create", server.createReview)  //create a review for a room
-	router.GET("/reviews", server.listRoomReviews)       //list all reviews for a room
-	router.PUT("/update/review", server.updateReview)    //update a review
-	router.DELETE("/delete/review", server.deleteReview) //delete a review
-	router.GET("/review", server.getRoomReview)          //get a single review for a room by a user
+	authRoutes.POST("/reviews/create", server.createReview)  //create a review for a room
+	authRoutes.GET("/reviews", server.listRoomReviews)       //list all reviews for a room
+	authRoutes.PUT("/update/review", server.updateReview)    //update a review
+	authRoutes.DELETE("/delete/review", server.deleteReview) //delete a review
+	authRoutes.GET("/review", server.getRoomReview)          //get a single review for a room by a user
 	server.router = router
 
 }

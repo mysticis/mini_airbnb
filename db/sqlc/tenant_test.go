@@ -13,11 +13,11 @@ func createRandomTenant(t *testing.T) Tenant {
 	hashedPassword, err := utils.HashPassword("tenantPass")
 	require.NoError(t, err)
 	arg := CreateTenantParams{
-		FirstName: gofakeit.FirstName(),
-		LastName:  gofakeit.LastName(),
-		Email:     gofakeit.Email(),
-		Phone:     gofakeit.Phone(),
-		Password:  hashedPassword,
+		FirstName:      gofakeit.FirstName(),
+		LastName:       gofakeit.LastName(),
+		Email:          gofakeit.Email(),
+		Phone:          gofakeit.Phone(),
+		HashedPassword: hashedPassword,
 	}
 
 	tenant, err := testQueries.CreateTenant(context.Background(), arg)

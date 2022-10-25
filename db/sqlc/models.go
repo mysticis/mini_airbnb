@@ -70,15 +70,15 @@ type Landlord struct {
 }
 
 type Reservation struct {
-	ID        int32     `json:"id"`
-	TenantID  int32     `json:"tenant_id"`
-	RoomID    int32     `json:"room_id"`
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
-	Price     float64   `json:"price"`
-	Total     float64   `json:"total"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int32       `json:"id"`
+	EmailID   string      `json:"email_id"`
+	TenantID  int32       `json:"tenant_id"`
+	RoomID    int32       `json:"room_id"`
+	Duration  interface{} `json:"duration"`
+	Price     float64     `json:"price"`
+	Total     float64     `json:"total"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
 }
 
 type Review struct {
@@ -92,6 +92,7 @@ type Review struct {
 
 type Room struct {
 	ID                   int32     `json:"id"`
+	EmailID              string    `json:"email_id"`
 	OwnerID              int32     `json:"owner_id"`
 	HomeType             []string  `json:"home_type"`
 	HomeSize             HomeSize  `json:"home_size"`

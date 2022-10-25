@@ -2,13 +2,16 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/mysticis/airbnb_mini/db/sqlc"
+	"github.com/mysticis/airbnb_mini/token"
 )
 
+// Only a logged in/authenticated user (landlord) can create room(s)
 type createRoomRequest struct {
 	OwnerID              int32     `uri:"owner_id"`
 	HomeType             []string  `json:"home_type"`
@@ -46,7 +49,9 @@ func (server *Server) createRoom(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateRoomParams{
+		EmailID:              authPayload.Email,
 		OwnerID:              req.OwnerID,
 		HomeType:             req.HomeType,
 		HomeSize:             db.HomeSize(req.HomeSize),
@@ -76,8 +81,8 @@ func (server *Server) createRoom(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, room)
 }
 
-//Get a room request
-
+// Get a room request
+// A landlord can only get rooms created by himself
 type getRoomByOwnerRequest struct {
 	ID      int32 `form:"id"`
 	OwnerID int32 `form:"owner_id"`
@@ -105,11 +110,19 @@ func (server *Server) getRoomByOwner(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if room.EmailID != authPayload.Email {
+		err := errors.New("room does not belong to you")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, room)
 }
 
-//Update Room
-
+// Update Room
+// An authenticated landlord can only update rooms posted by him
 type updateRoomRequest struct {
 	ID                   int32    `form:"id" binding:"required,min=1"`
 	OwnerID              int32    `form:"owner_id" binding:"required,min=1"`
@@ -177,9 +190,18 @@ func (server *Server) updateRoomDetails(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if updatedRoom.EmailID != authPayload.Email {
+		err := errors.New("room does not belong to you")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, updatedRoom)
 }
 
+// Admin list rooms request
 type listRoomsRequest struct {
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5"`
@@ -201,6 +223,14 @@ func (server *Server) listRooms(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	adminAuthPayload := ctx.MustGet(authorizationAdminPayloadKey).(*token.AdminPayload)
+
+	if adminAuthPayload.Username != "admin" {
+		err := errors.New("for admins only")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 

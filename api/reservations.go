@@ -6,15 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/mysticis/airbnb_mini/db/sqlc"
+	"github.com/mysticis/airbnb_mini/token"
 )
 
 type createReservationRequest struct {
-	TenantID  int64     `form:"tenant_id,omitempty"`
-	RoomID    int64     `form:"room_id,omitempty"`
-	StartDate time.Time `json:"start_date,omitempty"`
-	EndDate   time.Time `json:"end_date,omitempty"`
-	Price     float64   `json:"price,omitempty"`
-	Total     float64   `json:"total,omitempty"`
+	TenantID int64       `form:"tenant_id,omitempty"`
+	RoomID   int64       `form:"room_id,omitempty"`
+	Duration interface{} `json:"duration"`
+	Price    float64     `json:"price,omitempty"`
+	Total    float64     `json:"total,omitempty"`
 }
 
 func (server *Server) createReservation(ctx *gin.Context) {
@@ -30,13 +30,15 @@ func (server *Server) createReservation(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateReservationParams{
-		TenantID:  int32(req.TenantID),
-		RoomID:    int32(req.RoomID),
-		StartDate: req.StartDate,
-		EndDate:   req.EndDate,
-		Price:     req.Price,
-		Total:     req.Total,
+		TenantID: int32(req.TenantID),
+		EmailID:  authPayload.Email,
+		RoomID:   int32(req.RoomID),
+		Duration: time.Duration(590),
+		Price:    req.Price,
+		Total:    req.Total,
 	}
 
 	reservation, err := server.store.CreateReservation(ctx, arg)
@@ -118,13 +120,12 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 //update reservation
 
 type updateReservationRequest struct {
-	ID        int64     `form:"id,omitempty" json:"id,omitempty"`
-	TenantID  int64     `form:"tenant_id,omitempty" json:"tenant_id,omitempty"`
-	RoomID    int64     `json:"room_id,omitempty"`
-	StartDate time.Time `json:"start_date,omitempty"`
-	EndDate   time.Time `json:"end_date,omitempty"`
-	Price     float64   `json:"price,omitempty"`
-	Total     float64   `json:"total,omitempty"`
+	ID       int64       `form:"id,omitempty" json:"id,omitempty"`
+	TenantID int64       `form:"tenant_id,omitempty" json:"tenant_id,omitempty"`
+	RoomID   int64       `json:"room_id,omitempty"`
+	Duration interface{} `json:"duration"`
+	Price    float64     `json:"price,omitempty"`
+	Total    float64     `json:"total,omitempty"`
 }
 
 func (server *Server) updateReservation(ctx *gin.Context) {
@@ -141,13 +142,12 @@ func (server *Server) updateReservation(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateReservationParams{
-		ID:        int32(req.ID),
-		TenantID:  int32(req.TenantID),
-		RoomID:    int32(req.RoomID),
-		StartDate: req.StartDate,
-		EndDate:   req.EndDate,
-		Price:     req.Price,
-		Total:     req.Total,
+		ID:       int32(req.ID),
+		TenantID: int32(req.TenantID),
+		RoomID:   int32(req.RoomID),
+		Duration: time.Duration(400),
+		Price:    req.Price,
+		Total:    req.Total,
 	}
 
 	updatedRes, err := server.store.UpdateReservation(ctx, arg)

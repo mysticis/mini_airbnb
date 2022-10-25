@@ -11,12 +11,11 @@ import (
 
 func createRandomReservation(t *testing.T) {
 	arg := CreateReservationParams{
-		TenantID:  int32(gofakeit.IntRange(1, 10)),
-		RoomID:    int32(gofakeit.IntRange(28, 35)),
-		StartDate: time.Now(),
-		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
-		Price:     200.00,
-		Total:     320.00,
+		TenantID: int32(gofakeit.IntRange(1, 10)),
+		RoomID:   int32(gofakeit.IntRange(28, 35)),
+		Duration: gofakeit.DateRange(time.Now(), time.Now().AddDate(2022, 10, 05)),
+		Price:    200.00,
+		Total:    320.00,
 	}
 
 	reservation, err := testQueries.CreateReservation(context.Background(), arg)
@@ -24,10 +23,7 @@ func createRandomReservation(t *testing.T) {
 	require.NotEmpty(t, reservation)
 	require.Equal(t, arg.Price, reservation.Price)
 	require.Equal(t, arg.Total, reservation.Total)
-	require.NotZero(t, reservation.StartDate)
-	require.NotZero(t, reservation.EndDate)
-	require.WithinDuration(t, arg.StartDate, reservation.StartDate, 10*time.Second)
-	require.WithinDuration(t, arg.EndDate, reservation.EndDate, 10*time.Second)
+	require.WithinRange(t, time.Now().AddDate(2022, 10, 04), time.Now(), time.Now().AddDate(2022, 10, 05))
 }
 func TestCreateReservation(t *testing.T) {
 
@@ -36,12 +32,12 @@ func TestCreateReservation(t *testing.T) {
 
 func createARandomReservation(t *testing.T) Reservation {
 	arg := CreateReservationParams{
-		TenantID:  int32(gofakeit.IntRange(1, 10)),
-		RoomID:    int32(gofakeit.IntRange(28, 35)),
-		StartDate: time.Now(),
-		EndDate:   time.Now().Add(time.Duration(time.Now().Day())),
-		Price:     gofakeit.Float64Range(250, 500),
-		Total:     gofakeit.Float64Range(500, 600),
+		TenantID: int32(gofakeit.IntRange(1, 10)),
+		RoomID:   int32(gofakeit.IntRange(28, 35)),
+		Duration: gofakeit.DateRange(time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+			time.Date(2009, time.December, 10, 23, 0, 0, 0, time.UTC)),
+		Price: gofakeit.Float64Range(250, 500),
+		Total: gofakeit.Float64Range(500, 600),
 	}
 
 	reservation, err := testQueries.CreateReservation(context.Background(), arg)
@@ -49,10 +45,8 @@ func createARandomReservation(t *testing.T) Reservation {
 	require.NotEmpty(t, reservation)
 	require.Equal(t, arg.Price, reservation.Price)
 	require.Equal(t, arg.Total, reservation.Total)
-	require.NotZero(t, reservation.StartDate)
-	require.NotZero(t, reservation.EndDate)
-	require.WithinDuration(t, arg.StartDate, reservation.StartDate, 10*time.Second)
-	require.WithinDuration(t, arg.EndDate, reservation.EndDate, 10*time.Second)
+	require.WithinRange(t, time.Date(2009, time.November, 30, 23, 0, 0, 0, time.UTC), time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC),
+		time.Date(2009, time.December, 1, 23, 0, 0, 0, time.UTC))
 	return reservation
 }
 func TestGetReservations(t *testing.T) {
@@ -74,12 +68,10 @@ func TestGetReservations(t *testing.T) {
 
 func createBRandomReservation(t *testing.T) Reservation {
 	arg := CreateReservationParams{
-		TenantID:  int32(gofakeit.IntRange(1, 10)),
-		RoomID:    int32(gofakeit.IntRange(28, 35)),
-		StartDate: time.Now(),
-		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
-		Price:     250.00,
-		Total:     370.00,
+		TenantID: int32(gofakeit.IntRange(1, 10)),
+		RoomID:   int32(gofakeit.IntRange(28, 35)),
+		Price:    250.00,
+		Total:    370.00,
 	}
 
 	reservation, err := testQueries.CreateReservation(context.Background(), arg)
@@ -87,10 +79,6 @@ func createBRandomReservation(t *testing.T) Reservation {
 	require.NotEmpty(t, reservation)
 	require.Equal(t, arg.Price, reservation.Price)
 	require.Equal(t, arg.Total, reservation.Total)
-	require.NotZero(t, reservation.StartDate)
-	require.NotZero(t, reservation.EndDate)
-	require.WithinDuration(t, arg.StartDate, reservation.StartDate, 10*time.Second)
-	require.WithinDuration(t, arg.EndDate, reservation.EndDate, 10*time.Second)
 	return reservation
 }
 
@@ -99,13 +87,11 @@ func TestUpdateReservation(t *testing.T) {
 	res1 := createBRandomReservation(t)
 
 	arg := UpdateReservationParams{
-		ID:        res1.ID,
-		TenantID:  res1.TenantID,
-		RoomID:    int32(gofakeit.IntRange(28, 35)),
-		StartDate: time.Now().Add(time.Duration(time.Now().Day())),
-		EndDate:   time.Now().Add(time.Duration(time.Now().Month())),
-		Price:     600.00,
-		Total:     650.00,
+		ID:       res1.ID,
+		TenantID: res1.TenantID,
+		RoomID:   int32(gofakeit.IntRange(28, 35)),
+		Price:    600.00,
+		Total:    650.00,
 	}
 
 	updatedRes, err := testQueries.UpdateReservation(context.Background(), arg)
@@ -115,8 +101,6 @@ func TestUpdateReservation(t *testing.T) {
 	require.Equal(t, arg.ID, updatedRes.ID)
 	require.Equal(t, arg.TenantID, updatedRes.TenantID)
 	require.Equal(t, arg.RoomID, updatedRes.RoomID)
-	require.WithinDuration(t, arg.StartDate, updatedRes.StartDate, 10*time.Second)
-	require.WithinDuration(t, arg.EndDate, updatedRes.EndDate, 10*time.Second)
 	require.Equal(t, arg.Price, updatedRes.Price)
 	require.Equal(t, arg.Total, updatedRes.Total)
 }

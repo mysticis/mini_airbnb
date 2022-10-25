@@ -26,7 +26,7 @@ type userResponse struct {
 	Phone     string `json:"phone"`
 }
 
-func newUserResponse(tenant db.Tenant) userResponse {
+func newTenantResponse(tenant db.Tenant) userResponse {
 	return userResponse{
 		FirstName: tenant.FirstName,
 		LastName:  tenant.LastName,
@@ -38,13 +38,16 @@ func newUserResponse(tenant db.Tenant) userResponse {
 func (server *Server) createTenant(ctx *gin.Context) {
 
 	var req createTenantRequest
-	hashedPassword, err := utils.HashPassword(req.Password)
-	if err != nil {
-		log.Fatal("cannot hash password:", err)
-	}
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
+	}
+
+	hashedPassword, err := utils.HashPassword(req.Password)
+
+	if err != nil {
+		log.Fatal("cannot hash password:", err)
 	}
 
 	arg := db.CreateTenantParams{
@@ -129,7 +132,7 @@ func (server *Server) loginTenant(ctx *gin.Context) {
 
 	response := tenantLoginResponse{
 		AccessToken: accessToken,
-		Tenant:      newUserResponse(tenant),
+		Tenant:      newTenantResponse(tenant),
 	}
 
 	ctx.JSON(http.StatusOK, response)

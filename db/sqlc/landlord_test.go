@@ -13,11 +13,11 @@ func createRandomLandord(t *testing.T) Landlord {
 	hashedPassword, err := utils.HashPassword("landlordPass")
 	require.NoError(t, err)
 	arg := CreateLandlordParams{
-		FirstName: gofakeit.FirstName(),
-		LastName:  gofakeit.LastName(),
-		Email:     gofakeit.Email(),
-		Phone:     gofakeit.Phone(),
-		Password:  hashedPassword,
+		FirstName:      gofakeit.FirstName(),
+		LastName:       gofakeit.LastName(),
+		Email:          gofakeit.Email(),
+		Phone:          gofakeit.Phone(),
+		HashedPassword: hashedPassword,
 	}
 
 	landlord, err := testQueries.CreateLandlord(context.Background(), arg)

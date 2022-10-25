@@ -25,6 +25,7 @@ CREATE TABLE "landlord" (
 
 CREATE TABLE "rooms" (
   "id" SERIAL PRIMARY KEY,
+  "email_id" varchar not null,
   "owner_id" int NOT NULL,
   "home_type" varchar[] NOT NULL,
   "home_size" home_size NOT NULL,
@@ -49,14 +50,15 @@ CREATE TABLE "rooms" (
 
 CREATE TABLE "reservations" (
    "id" SERIAL PRIMARY KEY,
+   "email_id" varchar NOT NULL,
   "tenant_id" int NOT NULL,
   "room_id" int NOT NULL,
-  "start_date" timestamptz NOT NULL,
-  "end_date" timestamptz NOT NULL,
+  "duration" tsrange,
   "price" float NOT NULL,
   "total" float NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
-  "updated_at" timestamptz NOT NULL DEFAULT (now())
+  "updated_at" timestamptz NOT NULL DEFAULT (now()),
+  EXCLUDE USING GIST (duration WITH &&)
 );
 
 
@@ -79,8 +81,9 @@ ALTER TABLE "rooms" ADD FOREIGN KEY ("owner_id") REFERENCES "landlord" ("id") ON
 
 ALTER TABLE "reservations" ADD FOREIGN KEY ("tenant_id") REFERENCES "tenant" ("id") ON DELETE CASCADE;
 
+ALTER TABLE "reservations" ADD FOREIGN KEY ("email_id") REFERENCES "tenant" ("email") ON DELETE CASCADE;
 ALTER TABLE "reservations" ADD FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE;
-
+ALTER TABLE "rooms" ADD FOREIGN KEY ("email_id") REFERENCES "landlord" ("email") ON DELETE CASCADE;
 ALTER TABLE "reviews" ADD FOREIGN KEY ("user_id") REFERENCES "tenant" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "reviews" ADD FOREIGN KEY ("room_id") REFERENCES "rooms" ("id") ON DELETE CASCADE;

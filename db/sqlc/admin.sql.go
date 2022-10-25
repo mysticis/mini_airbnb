@@ -29,3 +29,15 @@ func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (Admin
 	err := row.Scan(&i.ID, &i.Name, &i.Password)
 	return i, err
 }
+
+const getAdmin = `-- name: GetAdmin :one
+SELECT id, name, password FROM admin
+WHERE name = $1 LIMIT 1
+`
+
+func (q *Queries) GetAdmin(ctx context.Context, name string) (Admin, error) {
+	row := q.db.QueryRowContext(ctx, getAdmin, name)
+	var i Admin
+	err := row.Scan(&i.ID, &i.Name, &i.Password)
+	return i, err
+}

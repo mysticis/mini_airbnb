@@ -7,43 +7,43 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 const createReservation = `-- name: CreateReservation :one
 INSERT INTO reservations (
- tenant_id, room_id, start_date, end_date, price, total
+ tenant_id, email_id, room_id, duration, price, total
 ) VALUES (
   $1, $2, $3, $4, $5, $6
 )
-RETURNING id, tenant_id, room_id, start_date, end_date, price, total, created_at, updated_at
+
+RETURNING id, email_id, tenant_id, room_id, duration, price, total, created_at, updated_at
 `
 
 type CreateReservationParams struct {
-	TenantID  int32     `json:"tenant_id"`
-	RoomID    int32     `json:"room_id"`
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
-	Price     float64   `json:"price"`
-	Total     float64   `json:"total"`
+	TenantID int32       `json:"tenant_id"`
+	EmailID  string      `json:"email_id"`
+	RoomID   int32       `json:"room_id"`
+	Duration interface{} `json:"duration"`
+	Price    float64     `json:"price"`
+	Total    float64     `json:"total"`
 }
 
 func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error) {
 	row := q.db.QueryRowContext(ctx, createReservation,
 		arg.TenantID,
+		arg.EmailID,
 		arg.RoomID,
-		arg.StartDate,
-		arg.EndDate,
+		arg.Duration,
 		arg.Price,
 		arg.Total,
 	)
 	var i Reservation
 	err := row.Scan(
 		&i.ID,
+		&i.EmailID,
 		&i.TenantID,
 		&i.RoomID,
-		&i.StartDate,
-		&i.EndDate,
+		&i.Duration,
 		&i.Price,
 		&i.Total,
 		&i.CreatedAt,
@@ -68,7 +68,7 @@ func (q *Queries) DeleteReservation(ctx context.Context, arg DeleteReservationPa
 }
 
 const getReservations = `-- name: GetReservations :many
-SELECT id, tenant_id, room_id, start_date, end_date, price, total, created_at, updated_at FROM reservations
+SELECT id, email_id, tenant_id, room_id, duration, price, total, created_at, updated_at FROM reservations
 WHERE tenant_id = $1
 `
 
@@ -83,10 +83,10 @@ func (q *Queries) GetReservations(ctx context.Context, tenantID int32) ([]Reserv
 		var i Reservation
 		if err := rows.Scan(
 			&i.ID,
+			&i.EmailID,
 			&i.TenantID,
 			&i.RoomID,
-			&i.StartDate,
-			&i.EndDate,
+			&i.Duration,
 			&i.Price,
 			&i.Total,
 			&i.CreatedAt,
@@ -106,7 +106,7 @@ func (q *Queries) GetReservations(ctx context.Context, tenantID int32) ([]Reserv
 }
 
 const listReservations = `-- name: ListReservations :many
-SELECT id, tenant_id, room_id, start_date, end_date, price, total, created_at, updated_at FROM reservations
+SELECT id, email_id, tenant_id, room_id, duration, price, total, created_at, updated_at FROM reservations
 ORDER BY id
 `
 
@@ -121,10 +121,10 @@ func (q *Queries) ListReservations(ctx context.Context) ([]Reservation, error) {
 		var i Reservation
 		if err := rows.Scan(
 			&i.ID,
+			&i.EmailID,
 			&i.TenantID,
 			&i.RoomID,
-			&i.StartDate,
-			&i.EndDate,
+			&i.Duration,
 			&i.Price,
 			&i.Total,
 			&i.CreatedAt,
@@ -146,22 +146,20 @@ func (q *Queries) ListReservations(ctx context.Context) ([]Reservation, error) {
 const updateReservation = `-- name: UpdateReservation :one
 UPDATE reservations
 set room_id = $3,
-start_date = $4,
-end_date = $5,
-price = $6,
-total = $7
+duration = $4,
+price = $5,
+total = $6
 WHERE tenant_id = $2 AND id = $1
-RETURNING id, tenant_id, room_id, start_date, end_date, price, total, created_at, updated_at
+RETURNING id, email_id, tenant_id, room_id, duration, price, total, created_at, updated_at
 `
 
 type UpdateReservationParams struct {
-	ID        int32     `json:"id"`
-	TenantID  int32     `json:"tenant_id"`
-	RoomID    int32     `json:"room_id"`
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
-	Price     float64   `json:"price"`
-	Total     float64   `json:"total"`
+	ID       int32       `json:"id"`
+	TenantID int32       `json:"tenant_id"`
+	RoomID   int32       `json:"room_id"`
+	Duration interface{} `json:"duration"`
+	Price    float64     `json:"price"`
+	Total    float64     `json:"total"`
 }
 
 func (q *Queries) UpdateReservation(ctx context.Context, arg UpdateReservationParams) (Reservation, error) {
@@ -169,18 +167,17 @@ func (q *Queries) UpdateReservation(ctx context.Context, arg UpdateReservationPa
 		arg.ID,
 		arg.TenantID,
 		arg.RoomID,
-		arg.StartDate,
-		arg.EndDate,
+		arg.Duration,
 		arg.Price,
 		arg.Total,
 	)
 	var i Reservation
 	err := row.Scan(
 		&i.ID,
+		&i.EmailID,
 		&i.TenantID,
 		&i.RoomID,
-		&i.StartDate,
-		&i.EndDate,
+		&i.Duration,
 		&i.Price,
 		&i.Total,
 		&i.CreatedAt,
